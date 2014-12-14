@@ -11,19 +11,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 
-/**
- * Created by jan on 09/12/14.
- */
 public class EPubMerger {
 
     public static final char QUOTE = '”';
 
     public boolean shouldMerge(String firstLine) {
         String strippedLine = firstLine.trim();
-        String endOfLine = "";
-        if (strippedLine.length()>30) {
-            endOfLine = strippedLine.substring(strippedLine.length() - 20);
-        }
         if (!strippedLine.endsWith("</p>")) {
             return false;
         } else if (strippedLine.endsWith(". </p>")) {
@@ -44,8 +37,8 @@ public class EPubMerger {
 
     public void mergeLines(Book book) throws Exception {
         List<Resource> contents = book.getContents();
-        for (int c=2; c<contents.size();c++){
-            Resource resource = contents.get(c);
+        for (int contentItem=2; contentItem<contents.size();contentItem++){
+            Resource resource = contents.get(contentItem);
             String text = new String(resource.getData());
             String[] lines = text.split("\n");
             StringBuilder mergedLines = new StringBuilder();
@@ -60,7 +53,7 @@ public class EPubMerger {
                 }
             }
             resource.setData(mergedLines.toString().getBytes());
-            contents.set(c, resource);
+            contents.set(contentItem, resource);
         }
     }
 
