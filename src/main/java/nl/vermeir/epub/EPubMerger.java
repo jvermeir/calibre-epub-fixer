@@ -37,7 +37,9 @@ public class EPubMerger {
 
     public void mergeLines(Book book) throws Exception {
         List<Resource> contents = book.getContents();
-        for (int contentItem=2; contentItem<contents.size();contentItem++){
+        int firstContentItem=2;
+        if (contents.size()<3) { firstContentItem=0; }
+        for (int contentItem=firstContentItem; contentItem<contents.size();contentItem++){
             Resource resource = contents.get(contentItem);
             String text = new String(resource.getData());
             String[] lines = text.split("\n");
