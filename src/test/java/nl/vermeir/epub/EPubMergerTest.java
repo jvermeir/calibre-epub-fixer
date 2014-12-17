@@ -45,6 +45,12 @@ public class EPubMergerTest {
     }
 
     @Test
+    public void testDontMergeIfLineEndsInQuoteAndNextLineStartsWithQuote() {
+        String firstLine = "<p class=\"calibre1\">The barricade ran the \" ";
+        assertFalse(merger.shouldMerge(firstLine));
+    }
+
+    @Test
     public void testCalibreTagsAreRemovedFromMergedLine() {
         String line1 = "<p class=\"calibre1\">The barricade ran the length of the frontier. It was transparent and still when calm, but the section</p>";
         String line2 = "<p class=\"calibre1\">before Ritter shimmered. Once coiled as though in tangled skeins, Turbulence now splattered like</p>";
@@ -63,5 +69,4 @@ public class EPubMergerTest {
         String[] lines = text.split("\n");
         assertEquals(498, lines.length);
     }
-
 }

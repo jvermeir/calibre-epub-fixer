@@ -15,8 +15,8 @@ public class EPubMerger {
 
     public static final char QUOTE = '”';
 
-    public boolean shouldMerge(String firstLine) {
-        String strippedLine = firstLine.trim();
+    public boolean shouldMerge(String currentText) {
+        String strippedLine = currentText.trim();
         if (!strippedLine.endsWith("</p>")) {
             return false;
         } else if (strippedLine.endsWith(". </p>")) {
@@ -25,6 +25,8 @@ public class EPubMerger {
             return false;
         } else if (strippedLine.endsWith(QUOTE + " </p>")) {
             return false;
+        } else if (strippedLine.endsWith("\" </p>")) {
+            return false;
         }
         return true;
     }
@@ -32,14 +34,16 @@ public class EPubMerger {
     public String merge(String line1, String line2) {
         int endOfLine1 = line1.indexOf("</p>");
         int startOfLine2 = line2.indexOf(">") + 1;
-        return line1.substring(0,endOfLine1) + " " + line2.substring(startOfLine2);
+        return line1.substring(0, endOfLine1) + " " + line2.substring(startOfLine2);
     }
 
     public void mergeLines(Book book) throws Exception {
         List<Resource> contents = book.getContents();
-        int firstContentItem=2;
-        if (contents.size()<3) { firstContentItem=0; }
-        for (int contentItem=firstContentItem; contentItem<contents.size();contentItem++){
+        int firstContentItem = 2;
+        if (contents.size() < 3) {
+            firstContentItem = 0;
+        }
+        for (int contentItem = firstContentItem; contentItem < contents.size(); contentItem++) {
             Resource resource = contents.get(contentItem);
             String text = new String(resource.getData());
             String[] lines = text.split("\n");
@@ -61,7 +65,7 @@ public class EPubMerger {
 
     private String constructOutputFileName(String inputFileName) {
         String parts[] = inputFileName.split(File.separator);
-        return "data/" + parts[parts.length-1];
+        return "data/" + parts[parts.length - 1];
     }
 
     public void cleanUpBook(String inputFileName) {
@@ -79,14 +83,14 @@ public class EPubMerger {
         }
     }
 
-    public void cleanUpDirectory(String directoryName) throws  Exception {
+    public void cleanUpDirectory(String directoryName) throws Exception {
         File[] files = new File(directoryName).listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.toString().endsWith(".epub");
             }
         });
-        for (File file:files) {
+        for (File file : files) {
             cleanUpBook(file.getAbsolutePath());
         }
     }
