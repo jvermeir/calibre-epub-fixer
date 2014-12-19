@@ -94,4 +94,13 @@ public class EPubMerger {
             cleanUpBook(file.getAbsolutePath());
         }
     }
+
+    public void cleanUp(String fileOrDirectoryName) throws Exception {
+        File f = new File(fileOrDirectoryName);
+        if (f.exists() && f.isDirectory()) {
+            cleanUpDirectory(fileOrDirectoryName);
+        } else {
+            cleanUpBook(fileOrDirectoryName);
+        }
+    }
 }
