@@ -4,11 +4,15 @@ import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 import nl.siegmann.epublib.epub.EpubWriter;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public class EPubMerger {
@@ -39,10 +43,6 @@ public class EPubMerger {
 
     public void mergeLines(Book book) throws Exception {
         List<Resource> contents = book.getContents();
-//        int firstContentItem = 2;
-//        if (contents.size() < 3) {
-//            firstContentItem = 0;
-//        }
         for (int contentItem = 0; contentItem < contents.size(); contentItem++) {
             Resource resource = contents.get(contentItem);
             String text = new String(resource.getData());
@@ -63,44 +63,54 @@ public class EPubMerger {
         }
     }
 
-    private String constructOutputFileName(String inputFileName) {
-        String parts[] = inputFileName.split(File.separator);
-        return "data/" + parts[parts.length - 1];
-    }
-
     public void cleanUpBook(String inputFileName) {
-        System.out.println("Processing: " + inputFileName);
+        System.out.print("Processing: " + inputFileName);
         try {
-            Book book = new EpubReader().readEpub(new FileInputStream(inputFileName));
+            FileInputStream inputStream = new FileInputStream(inputFileName);
+            Book book = new EpubReader().readEpub(inputStream);
+            inputStream.close();
             EPubMerger merger = new EPubMerger();
             merger.mergeLines(book);
-            File out = new File(constructOutputFileName(inputFileName));
+            File out = new File(inputFileName);
             FileOutputStream fos = new FileOutputStream(out);
             EpubWriter epubWriter = new EpubWriter();
             epubWriter.write(book, fos);
+            System.out.println("->" + out.getAbsoluteFile());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void cleanUpDirectory(String directoryName) throws Exception {
-        File[] files = new File(directoryName).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.toString().endsWith(".epub");
-            }
-        });
+    public void cleanUpDirectory(String directoryName, final long modifiedSince) throws Exception {
+        Collection<File> files = getEpubFilesSince(directoryName, modifiedSince);
         for (File file : files) {
             cleanUpBook(file.getAbsolutePath());
         }
     }
 
-    public void cleanUp(String fileOrDirectoryName) throws Exception {
+    public void cleanUp(String fileOrDirectoryName, long modifiedSince) throws Exception {
         File f = new File(fileOrDirectoryName);
         if (f.exists() && f.isDirectory()) {
-            cleanUpDirectory(fileOrDirectoryName);
+            cleanUpDirectory(fileOrDirectoryName, modifiedSince);
         } else {
             cleanUpBook(fileOrDirectoryName);
         }
     }
+
+    public void cleanUp(String fileOrDirectoryName) throws Exception {
+        cleanUp(fileOrDirectoryName, 0);
+    }
+
+    public Collection<File> getEpubFilesSince(String rootDir, long timeStamp) {
+        final String[] epubFiles = {"epub"};
+        Collection<File> files = FileUtils.listFiles(new File(rootDir), epubFiles, true);
+        Collection<File> newFiles = new ArrayList<File>();
+        for (File file : files) {
+            if (file.lastModified()>=timeStamp) {
+                newFiles.add(file);
+            }
+        }
+        return newFiles;
+    }
+
 }

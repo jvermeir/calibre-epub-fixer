@@ -5,11 +5,11 @@ import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class EPubMergerTest {
     private EPubMerger merger = new EPubMerger();
@@ -69,4 +69,38 @@ public class EPubMergerTest {
         String[] lines = text.split("\n");
         assertEquals(498, lines.length);
     }
+
+    @Test
+    public void testGetNewBooksReturns2() {
+        long testTimeStamp =  0;
+        String rootDir="/tmp/epubTester";
+        try {
+            testTimeStamp = createTestFiles(rootDir);
+        } catch (Exception e) {
+            fail("Caught exception while creating testfiles");
+        }
+        assertEquals(3, new EPubMerger().getEpubFilesSince(rootDir, testTimeStamp).size());
+    }
+
+    private long createTestFiles(String rootDir) throws Exception {
+        new File(rootDir).mkdirs();
+        new File(rootDir + "/sub").mkdir();
+        writeSomeDataToFile(new File(rootDir + "/oldfile.epub"));
+        Thread.sleep(1000);
+        long justBeforeCreatingNewFiles = System.currentTimeMillis();
+        Thread.sleep(1000);
+        writeSomeDataToFile(new File(rootDir + "/newfile1.epub"));
+        writeSomeDataToFile(new File(rootDir + "/newfile2.epub"));
+        writeSomeDataToFile(new File(rootDir + "/sub/newfile2.epub"));
+        writeSomeDataToFile(new File(rootDir + "/newfile2.xml"));
+        return justBeforeCreatingNewFiles;
+    }
+
+    private void writeSomeDataToFile(File file) throws Exception {
+        file.delete();
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write("test".getBytes());
+        fos.close();
+    }
+
 }
