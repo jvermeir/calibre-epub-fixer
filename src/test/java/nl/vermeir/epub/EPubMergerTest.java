@@ -65,7 +65,6 @@ public class EPubMergerTest {
         Book book = epubReader.readEpub(new FileInputStream("data/in/test.epub"));
         Resource resource = book.getContents().get(1);
         String text = new String(resource.getData());
-        EPubMerger merger = new EPubMerger();
         String[] lines = text.split("\n");
         assertEquals(498, lines.length);
     }
